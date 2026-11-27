@@ -286,7 +286,7 @@ public final class RuntimeBootstrap {
         }
 
         @Override
-        public HostInfoProvider hostInfo() {
+        public ModuleLoader.HostInfoProvider hostInfo() {
             return () -> {
                 HostInfo info = options.hostInfo;
                 return info;

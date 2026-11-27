@@ -35,9 +35,8 @@ public final class CachedSnapshotSource implements SnapshotSource {
 
     @Override
     public Result<SnapshotData> load(boolean safeMode) {
-        Result<java.nio.file.Path> activePath = ModulePaths.activeSnapshot(storageRoot.toPath());
-        File active = activePath.isOk() ? activePath.value().toFile() : null;
-        if (active == null || !active.isFile()) {
+        File active = ModulePaths.activeSnapshot(storageRoot.toPath()).toFile();
+        if (!active.isFile()) {
             log.log(RuntimeEvent.SNAPSHOT_UNAVAILABLE, null,
                     "Локальный запасной снимок отсутствует");
             return Result.fail("SNAPSHOT_NO_CACHE",
@@ -83,12 +82,12 @@ public final class CachedSnapshotSource implements SnapshotSource {
     }
 
     private Result<SnapshotData> loadPrevious(boolean safeMode) {
-        Result<java.nio.file.Path> previousPath = ModulePaths.previousSnapshot(storageRoot.toPath());
-        if (!previousPath.isOk() || !previousPath.value().toFile().isFile()) {
+        File previous = ModulePaths.previousSnapshot(storageRoot.toPath()).toFile();
+        if (!previous.isFile()) {
             return Result.fail("SNAPSHOT_NO_PREVIOUS", "Предыдущий снимок отсутствует");
         }
         try {
-            String json = new String(Files.readAllBytes(previousPath.value()), StandardCharsets.UTF_8);
+            String json = new String(Files.readAllBytes(previous.toPath()), StandardCharsets.UTF_8);
             Result<Snapshot> decoded = SnapshotCodec.decode(json);
             if (!decoded.isOk()) {
                 return Result.fail(decoded.errorCode(), decoded.errorMessage());
@@ -160,10 +159,7 @@ public final class CachedSnapshotSource implements SnapshotSource {
 
     /** Сохраняет снимок как запасной (используется менеджером при публикации). */
     public static Result<Void> persist(File storageRoot, String snapshotJson) {
-        Result<java.nio.file.Path> path = ModulePaths.activeSnapshot(storageRoot.toPath());
-        if (!path.isOk()) {
-            return Result.fail(path.errorCode(), path.errorMessage());
-        }
-        return AtomicFile.write(path.value(), snapshotJson.getBytes(StandardCharsets.UTF_8));
+        return AtomicFile.write(ModulePaths.activeSnapshot(storageRoot.toPath()),
+                snapshotJson.getBytes(StandardCharsets.UTF_8));
     }
 }

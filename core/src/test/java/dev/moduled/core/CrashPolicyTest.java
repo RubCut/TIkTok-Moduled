@@ -99,20 +99,29 @@ public class CrashPolicyTest {
         assertEquals(10L * 60 * 1000, CrashPolicy.WINDOW_MS);
         assertEquals(3, CrashPolicy.CRASH_THRESHOLD);
 
+        // Три сбоя внутри окна -> защёлка.
         CrashPolicy policy = policy();
         policy.recordEvent(crash("c1"));
         clock.advanceMs(60_000);
         policy.recordEvent(crash("c2"));
-        // Первый сбой выпадает из окна через 10 минут.
-        clock.advanceMs(10L * 60 * 1000);
+        clock.advanceMs(60_000);
         policy.recordEvent(crash("c3"));
-        assertEquals(2, policy.recentCrashCount());
-        assertFalse(policy.shouldRunSafeMode());
-
-        clock.advanceMs(1000);
-        policy.recordEvent(crash("c4"));
         assertEquals(3, policy.recentCrashCount());
         assertTrue(policy.shouldRunSafeMode());
+
+        // Старые сбои выпадают из окна: граница ровно десять минут.
+        CrashPolicy fresh = new CrashPolicy(clock, new MemoryStore());
+        fresh.recordEvent(crash("w1"));
+        clock.advanceMs(CrashPolicy.WINDOW_MS + 1);
+        fresh.recordEvent(crash("w2"));
+        fresh.recordEvent(crash("w3"));
+        assertEquals("Первый сбой обязан выпасть из окна", 2, fresh.recentCrashCount());
+        assertFalse(fresh.shouldRunSafeMode());
+
+        clock.advanceMs(1000);
+        fresh.recordEvent(crash("w4"));
+        assertEquals(3, fresh.recentCrashCount());
+        assertTrue(fresh.shouldRunSafeMode());
     }
 
     /** CR-02: защёлка переживает перезапуск и не снимается обычным стартом. */

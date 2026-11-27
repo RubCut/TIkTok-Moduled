@@ -38,8 +38,9 @@ def main(paths) -> int:
         for line in lines[-120:]:
             sys.stdout.write(line)
         pattern = re.compile(
-            r"(?i)(FAILURE|error:|warning: \[|Exception|What went wrong|Caused by|"
-            r"> Task .* FAILED|Execution failed|symbol:|location:|\^)")
+            r"(?i)(FAILURE|error:|Exception|What went wrong|Caused by:|Execution failed|"
+            r"symbol:|location:|FAILED|expected:|AssertionError|ComparisonFailure|"
+            r"\bat dev\.moduled\.|incompatible types|cannot find symbol)")
         interesting = []
         for index, line in enumerate(lines):
             if pattern.search(line):
