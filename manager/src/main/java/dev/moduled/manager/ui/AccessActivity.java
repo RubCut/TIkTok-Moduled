@@ -78,19 +78,22 @@ public final class AccessActivity extends BaseScreenActivity {
         column.addView(title(getString(R.string.access_manifest_diff_title)));
         column.addView(body(getString(R.string.access_manifest_diff_note)));
         AppExecutors.get().background(() -> {
-            java.io.File report = new java.io.File(app().storageRoot(), LAST_PATCH_DIFF_FILE);
-            String text;
-            if (report.isFile()) {
-                try {
-                    text = new String(java.nio.file.Files.readAllBytes(report.toPath()),
-                            java.nio.charset.StandardCharsets.UTF_8);
-                } catch (java.io.IOException e) {
-                    text = getString(R.string.diagnostics_empty);
-                }
-            } else {
-                text = getString(R.string.diagnostics_empty);
-            }
+            String text = readLastPatchReport();
             AppExecutors.get().main(() -> column.addView(mono(text)));
         });
+    }
+
+    /** Читает diff-отчёт последнего патча; при отсутствии/ошибке — пустое состояние. */
+    private String readLastPatchReport() {
+        java.io.File report = new java.io.File(app().storageRoot(), LAST_PATCH_DIFF_FILE);
+        if (!report.isFile()) {
+            return getString(R.string.diagnostics_empty);
+        }
+        try {
+            return new String(java.nio.file.Files.readAllBytes(report.toPath()),
+                    java.nio.charset.StandardCharsets.UTF_8);
+        } catch (java.io.IOException e) {
+            return getString(R.string.diagnostics_empty);
+        }
     }
 }

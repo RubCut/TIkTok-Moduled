@@ -44,13 +44,9 @@ public final class BridgeProvider extends ContentProvider {
         return true;
     }
 
-    private Context requireContext() {
-        Context context = getContext();
-        if (context == null) {
-            throw new IllegalStateException("BridgeProvider has no context");
-        }
-        return context;
-    }
+    // requireContext() унаследован от ContentProvider (API 26+, minSdk 28):
+    // переопределять его нельзя (final), а поведение то же — IllegalStateException
+    // при отсутствии контекста.
 
     @Override
     public Bundle call(String method, String arg, Bundle extras) {
