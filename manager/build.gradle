@@ -45,7 +45,10 @@ android {
 
     packagingOptions {
         resources {
-            excludes += ['META-INF/*.version', 'META-INF/LICENSE*']
+            // BouncyCastle несёт дубли OSGI-манифестов в multi-release JAR:
+            // они не нужны в APK и ломают mergeJavaResource.
+            excludes += ['META-INF/*.version', 'META-INF/LICENSE*',
+                         'META-INF/versions/**/OSGI-INF/**', 'OSGI-INF/**']
         }
     }
 
