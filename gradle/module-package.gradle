@@ -58,6 +58,9 @@ tasks.register('packageModule', Zip) {
     dependsOn tasks.named('dexClasses')
     archiveBaseName = project.name
     archiveExtension = 'zip'
+    // Версия в имени пакета не участвует: имя стабильно (<project>.zip),
+    // версия модуля живёт в module.json (§10.1).
+    archiveVersion = null
     destinationDirectory = packageOutDir
     from(file('src/main/module/module.json'))
     from(dexOutDir) {

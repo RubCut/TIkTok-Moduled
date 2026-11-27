@@ -3,7 +3,7 @@ name: Pages
 on:
   push:
     branches: ["main"]
-    paths: ["site/**"]
+    paths: ["site/**", ".github/workflows/pages.yml", ".github/scripts/validate-catalog.py"]
   workflow_dispatch:
 
 permissions:
@@ -22,25 +22,20 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Validate catalog.json
-        run: python3 - <<'PY'
-          import json, sys
-          with open('site/catalog.json', encoding='utf-8') as f:
-              catalog = json.load(f)
-          assert catalog.get('schemaVersion') == 1, 'schemaVersion != 1'
-          assert isinstance(catalog.get('modules'), list), 'modules не список'
-          ids = [m['id'] for m in catalog['modules']]
-          assert len(ids) == len(set(ids)), 'дубли ID в каталоге'
-          for module in catalog['modules']:
-              for key in ('id', 'name', 'description', 'manifestUrl'):
-                  assert key in module, f'нет поля {key} у {module.get("id")}'
-              assert module['manifestUrl'].startswith('https://'), 'manifestUrl обязан быть HTTPS'
-          print('catalog.json валиден:', len(ids), 'модулей')
-          PY
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+        run: python3 .github/scripts/validate-catalog.py site/catalog.json
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
         with:
           path: site
-      - id: deployment
+
+      - name: Deploy to GitHub Pages
+        id: deployment
         uses: actions/deploy-pages@v4

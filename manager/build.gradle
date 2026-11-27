@@ -119,11 +119,8 @@ tasks.register('bundleModuleZips', Copy) {
     from project(':sample-module').layout.buildDirectory.dir('outputs/module-package')
     from project(':region-module').layout.buildDirectory.dir('outputs/module-package')
     from project(':inapp-manager').layout.buildDirectory.dir('outputs/module-package')
+    // Имена стабильны: packageModule задаёт archiveVersion = null → <project>.zip.
     include '*.zip'
-    // Имена файлов должны быть стабильны: sample-module.zip и т.д.
-    eachFile { details ->
-        details.name = details.name.replaceAll('-\d+(\.\d+)*', '')
-    }
     includeEmptyDirs = false
 }
 
