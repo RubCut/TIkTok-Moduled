@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Светлая тема MD3 (ТЗ §21.1): настоящие Material-компоненты, роли типографики. -->
+    <style name="Theme.Moduled" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/moduled_primary</item>
+        <item name="colorOnPrimary">@color/moduled_on_primary</item>
+        <item name="colorPrimaryContainer">@color/moduled_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/moduled_on_primary_container</item>
+        <item name="colorSecondary">@color/moduled_secondary</item>
+        <item name="colorOnSecondary">@color/moduled_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/moduled_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/moduled_on_secondary_container</item>
+        <item name="colorTertiary">@color/moduled_tertiary</item>
+        <item name="colorOnTertiary">@color/moduled_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/moduled_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/moduled_on_tertiary_container</item>
+        <item name="colorError">@color/moduled_error</item>
+        <item name="colorOnError">@color/moduled_on_error</item>
+        <item name="colorErrorContainer">@color/moduled_error_container</item>
+        <item name="colorOnErrorContainer">@color/moduled_on_error_container</item>
+        <item name="android:colorBackground">@color/moduled_background</item>
+        <item name="colorOnBackground">@color/moduled_on_background</item>
+        <item name="colorSurface">@color/moduled_surface</item>
+        <item name="colorOnSurface">@color/moduled_on_surface</item>
+        <item name="colorSurfaceVariant">@color/moduled_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/moduled_on_surface_variant</item>
+        <item name="colorOutline">@color/moduled_outline</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Moduled.Dialog</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+    </style>
+
+    <style name="ThemeOverlay.Moduled.Dialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.Moduled.DialogButton</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.Moduled.DialogButton</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.Moduled.DialogButton</item>
+    </style>
+
+    <style name="Widget.Moduled.DialogButton" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:minHeight">@dimen/moduled_touch_target</item>
+    </style>
+
+    <!-- Панель инструмента: заголовок экрана без системного ActionBar. -->
+    <style name="Widget.Moduled.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleTextAppearance">@style/TextAppearance.Moduled.Title</item>
+        <item name="android:minHeight">?attr/actionBarSize</item>
+    </style>
+
+    <style name="TextAppearance.Moduled.Title" parent="TextAppearance.Material3.TitleLarge" />
+
+    <style name="TextAppearance.Moduled.Body" parent="TextAppearance.Material3.BodyMedium" />
+
+    <style name="TextAppearance.Moduled.Label" parent="TextAppearance.Material3.LabelLarge" />
+
+    <!-- Моноширинный текст редактора конфигов (ТЗ §12 CFG-05). -->
+    <style name="TextAppearance.Moduled.Config" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:fontFamily">monospace</item>
+        <item name="android:typeface">monospace</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Widget.Moduled.Card" parent="Widget.Material3.CardView.Outlined">
+        <item name="android:layout_marginBottom">@dimen/moduled_gap</item>
+        <item name="contentPadding">@dimen/moduled_gap</item>
+    </style>
+
+    <style name="Widget.Moduled.Switch" parent="Widget.Material3.CompoundButton.MaterialSwitch">
+        <item name="android:minHeight">@dimen/moduled_touch_target</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+    </style>
+
+    <style name="Widget.Moduled.Button" parent="Widget.Material3.Button">
+        <item name="android:minHeight">@dimen/moduled_touch_target</item>
+    </style>
+
+    <style name="Widget.Moduled.Button.Tonal" parent="Widget.Material3.Button.TonalButton">
+        <item name="android:minHeight">@dimen/moduled_touch_target</item>
+    </style>
+
+    <style name="Widget.Moduled.Button.Text" parent="Widget.Material3.Button.TextButton">
+        <item name="android:minHeight">@dimen/moduled_touch_target</item>
+    </style>
+</resources>

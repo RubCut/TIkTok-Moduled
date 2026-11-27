@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Основной язык первой поставки — русский; строки вынесены в ресурсы для
+  последующей локализации (ТЗ §21.3).
+-->
+<resources>
+    <string name="moduled_app_name">TModules</string>
+    <string name="moduled_action_save">Сохранить</string>
+    <string name="moduled_action_cancel">Отмена</string>
+    <string name="moduled_action_close">Закрыть</string>
+    <string name="moduled_action_copy">Скопировать</string>
+    <string name="moduled_action_export">Экспорт файла</string>
+    <string name="moduled_action_retry">Повторить</string>
+    <string name="moduled_action_continue">Продолжить</string>
+    <string name="moduled_action_discard">Выйти без сохранения</string>
+    <string name="moduled_action_stay">Остаться и продолжить правку</string>
+    <string name="moduled_state_working">Выполняется…</string>
+    <string name="moduled_state_cannot_cancel">Текущую фазу нельзя отменить: дождитесь завершения</string>
+    <string name="moduled_warning_trusted_dex">Модуль исполняется внутри TikTok с возможностями этого приложения. Изоляции кода нет: модуль может читать доступные хосту данные, менять поведение приложения и обращаться к сети.</string>
+    <string name="moduled_warning_no_sandbox">Не является изоляцией кода внутри TikTok</string>
+    <string name="moduled_restart_required">Применится после перезапуска приложения</string>
+    <string name="moduled_copied_to_clipboard">Скопировано в буфер обмена</string>
+    <string name="moduled_clipboard_unavailable">Буфер обмена недоступен: используйте экспорт файла</string>
+</resources>

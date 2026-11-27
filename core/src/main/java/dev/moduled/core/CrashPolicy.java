@@ -196,9 +196,9 @@ public final class CrashPolicy {
     private static String encode(State s) {
         StringBuilder sb = new StringBuilder();
         sb.append("v1\n");
-        sb.append("safeMode=").append(s.safeModeLatched ? '1' : '0').append('\n');
-        sb.append("corrupted=").append(s.stateCorrupted ? '1' : '0').append('\n');
-        sb.append("lastReset=").append(s.lastResetWallMs).append('\n');
+        sb.append("safeMode ").append(s.safeModeLatched ? '1' : '0').append('\n');
+        sb.append("corrupted ").append(s.stateCorrupted ? '1' : '0').append('\n');
+        sb.append("lastReset ").append(s.lastResetWallMs).append('\n');
         for (Event e : s.crashEvents) {
             sb.append("crash ").append(e.eventId).append(' ').append(e.monotonicMs).append(' ')
                     .append(e.wallMs).append('\n');

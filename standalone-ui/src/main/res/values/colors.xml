@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Базовая палитра MD3. Используется, когда динамические цвета недоступны
+  (Android 11 и ниже): тема обязана выглядеть корректно и без них (ТЗ §21.1).
+-->
+<resources>
+    <color name="moduled_primary">#3F5AA6</color>
+    <color name="moduled_on_primary">#FFFFFF</color>
+    <color name="moduled_primary_container">#DCE1FF</color>
+    <color name="moduled_on_primary_container">#00174B</color>
+    <color name="moduled_secondary">#5A5D71</color>
+    <color name="moduled_on_secondary">#FFFFFF</color>
+    <color name="moduled_secondary_container">#DFE1F9</color>
+    <color name="moduled_on_secondary_container">#171A2C</color>
+    <color name="moduled_tertiary">#76546D</color>
+    <color name="moduled_on_tertiary">#FFFFFF</color>
+    <color name="moduled_tertiary_container">#FFD7F1</color>
+    <color name="moduled_on_tertiary_container">#2C1228</color>
+    <color name="moduled_error">#BA1A1A</color>
+    <color name="moduled_on_error">#FFFFFF</color>
+    <color name="moduled_error_container">#FFDAD6</color>
+    <color name="moduled_on_error_container">#410002</color>
+    <color name="moduled_background">#FAF8FF</color>
+    <color name="moduled_on_background">#1B1B21</color>
+    <color name="moduled_surface">#FAF8FF</color>
+    <color name="moduled_on_surface">#1B1B21</color>
+    <color name="moduled_surface_variant">#E2E1EC</color>
+    <color name="moduled_on_surface_variant">#45464F</color>
+    <color name="moduled_outline">#767680</color>
+    <color name="moduled_warning">#8A5100</color>
+    <color name="moduled_warning_container">#FFDDB0</color>
+</resources>

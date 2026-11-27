@@ -96,6 +96,7 @@ public final class SafeModeRecoveryActivity extends Activity {
             android.content.pm.ActivityInfo[] activities = context.getPackageManager()
                     .getPackageInfo(context.getPackageName(),
                             android.content.pm.PackageManager.GET_ACTIVITIES).activities;
+            // NameNotFoundException обрабатывается общим catch ниже.
             if (activities == null) {
                 return false;
             }
@@ -105,7 +106,7 @@ public final class SafeModeRecoveryActivity extends Activity {
                 }
             }
             return false;
-        } catch (RuntimeException e) {
+        } catch (android.content.pm.PackageManager.NameNotFoundException | RuntimeException e) {
             return false;
         }
     }

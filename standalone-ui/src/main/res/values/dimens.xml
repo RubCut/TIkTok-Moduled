@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Нажимаемые области не менее 48 dp (ТЗ §21.3). -->
+    <dimen name="moduled_touch_target">48dp</dimen>
+    <dimen name="moduled_gap">16dp</dimen>
+    <dimen name="moduled_gap_small">8dp</dimen>
+    <dimen name="moduled_screen_margin">16dp</dimen>
+    <!-- Узкий экран от 360 dp проверяется на этих отступах. -->
+    <dimen name="moduled_narrow_margin">12dp</dimen>
+</resources>

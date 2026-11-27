@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="moduled_primary">#B7C4FF</color>
+    <color name="moduled_on_primary">#002B75</color>
+    <color name="moduled_primary_container">#25408D</color>
+    <color name="moduled_on_primary_container">#DCE1FF</color>
+    <color name="moduled_secondary">#C3C5DD</color>
+    <color name="moduled_on_secondary">#2C2F42</color>
+    <color name="moduled_secondary_container">#434659</color>
+    <color name="moduled_on_secondary_container">#DFE1F9</color>
+    <color name="moduled_tertiary">#E5BAD7</color>
+    <color name="moduled_on_tertiary">#44263D</color>
+    <color name="moduled_tertiary_container">#5C3C55</color>
+    <color name="moduled_on_tertiary_container">#FFD7F1</color>
+    <color name="moduled_error">#FFB4AB</color>
+    <color name="moduled_on_error">#690005</color>
+    <color name="moduled_error_container">#93000A</color>
+    <color name="moduled_on_error_container">#FFDAD6</color>
+    <color name="moduled_background">#131318</color>
+    <color name="moduled_on_background">#E4E1E9</color>
+    <color name="moduled_surface">#131318</color>
+    <color name="moduled_on_surface">#E4E1E9</color>
+    <color name="moduled_surface_variant">#45464F</color>
+    <color name="moduled_on_surface_variant">#C6C5D0</color>
+    <color name="moduled_outline">#90909A</color>
+    <color name="moduled_warning">#FFB868</color>
+    <color name="moduled_warning_container">#4A2C00</color>
+</resources>

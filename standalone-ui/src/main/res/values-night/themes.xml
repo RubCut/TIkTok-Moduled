@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Тёмная тема обязательна (ТЗ §21.1). -->
+    <style name="Theme.Moduled" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/moduled_primary</item>
+        <item name="colorOnPrimary">@color/moduled_on_primary</item>
+        <item name="colorPrimaryContainer">@color/moduled_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/moduled_on_primary_container</item>
+        <item name="colorSecondary">@color/moduled_secondary</item>
+        <item name="colorOnSecondary">@color/moduled_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/moduled_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/moduled_on_secondary_container</item>
+        <item name="colorTertiary">@color/moduled_tertiary</item>
+        <item name="colorOnTertiary">@color/moduled_on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/moduled_tertiary_container</item>
+        <item name="colorOnTertiaryContainer">@color/moduled_on_tertiary_container</item>
+        <item name="colorError">@color/moduled_error</item>
+        <item name="colorOnError">@color/moduled_on_error</item>
+        <item name="colorErrorContainer">@color/moduled_error_container</item>
+        <item name="colorOnErrorContainer">@color/moduled_on_error_container</item>
+        <item name="android:colorBackground">@color/moduled_background</item>
+        <item name="colorOnBackground">@color/moduled_on_background</item>
+        <item name="colorSurface">@color/moduled_surface</item>
+        <item name="colorOnSurface">@color/moduled_on_surface</item>
+        <item name="colorSurfaceVariant">@color/moduled_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/moduled_on_surface_variant</item>
+        <item name="colorOutline">@color/moduled_outline</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Moduled.Dialog</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+    </style>
+</resources>

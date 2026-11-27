@@ -3,6 +3,7 @@ package dev.moduled.core;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.RandomAccessFile;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,21 +13,30 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
  * Безопасная проверка ZIP-пакета модуля (ТЗ §10.3 PKG-01..PKG-05).
  *
- * <p>Отклоняются: не-ZIP, повреждённый CRC, неподдерживаемый метод сжатия,
- * шифрование, абсолютные пути, сегменты {@code ..} и {@code .}, неоднозначные
- * разделители, дубликаты имён, пустые имена, превышение размера архива,
- * отдельной записи и суммарного распакованного объёма.</p>
+ * <p>Отклоняются: не-ZIP, несовпадение CRC или размера, неподдерживаемый метод
+ * сжатия, шифрование, абсолютные пути, сегменты {@code ..} и {@code .},
+ * неоднозначные разделители, дубликаты имён, пустые имена, превышение размера
+ * архива, отдельной записи и суммарного распакованного объёма.</p>
  *
- * <p>Проверка идёт по реально распакованному потоку байт, а не только по metadata
- * архива: заявленные размеры могут не совпадать с фактическими.</p>
+ * <p>CRC и размер проверяются по фактически прочитанному потоку байтов, а не по
+ * metadata: {@code java.util.zip.ZipFile} для STORED-записей CRC не сверяет,
+ * поэтому проверка выполняется явно (PKG-02). Шифрование определяется по флагам
+ * центрального каталога до открытия архива.</p>
  */
 public final class ArchiveValidator {
+
+    private static final long EOCD_SIGNATURE = 0x06054B50L;
+    private static final long CD_SIGNATURE = 0x02014B50L;
+    private static final int EOCD_MIN_SIZE = 22;
+    private static final int EOCD_MAX_COMMENT = 0xFFFF;
+
     private ArchiveValidator() {
     }
 
@@ -62,15 +72,13 @@ public final class ArchiveValidator {
                     "Archive is " + fileSize + " bytes, limit is " + Limits.MAX_ARCHIVE_FILE_BYTES);
         }
 
-        // Шифрование и недопустимые имена определяются до открытия архива:
-        // java.util.zip бросает общее исключение, которое не различает причины.
-        Result<List<LocalHeader>> scan = scanLocalHeaders(zipPath);
+        Result<List<CentralEntry>> scan = scanCentralDirectory(zipPath);
         if (!scan.isOk()) {
             return Result.fail(scan.errorCode(), scan.errorMessage());
         }
-        for (LocalHeader header : scan.value()) {
-            if (header.encrypted) {
-                return Result.fail("ARCHIVE_ENCRYPTED", "Encrypted entry: " + header.name);
+        for (CentralEntry entry : scan.value()) {
+            if (entry.encrypted) {
+                return Result.fail("ARCHIVE_ENCRYPTED", "Encrypted entry: " + entry.name);
             }
         }
 
@@ -96,17 +104,17 @@ public final class ArchiveValidator {
                 int method = entry.getMethod();
                 if (method != ZipEntry.STORED && method != ZipEntry.DEFLATED) {
                     return Result.fail("ARCHIVE_UNSUPPORTED_METHOD",
-                            "Unsupported compression method for entry: " + name);
+                            "Unsupported compression method (" + method + ") for entry: " + name);
                 }
                 byte[] data;
                 try (InputStream in = zip.getInputStream(entry)) {
-                    data = readLimited(in, entryLimitFor(name), name);
+                    data = readAndVerify(in, entry, name);
                 } catch (EntryTooLargeException e) {
                     // PKG-03: отдельный код, чтобы UI показал лимит, а не «повреждён».
                     return Result.fail("ARCHIVE_ENTRY_TOO_LARGE", e.getMessage());
                 } catch (IOException e) {
                     return Result.fail("ARCHIVE_CORRUPT",
-                            "Entry '" + name + "' is corrupt or has a CRC mismatch: " + e.getMessage());
+                            "Entry '" + name + "' is corrupt: " + e.getMessage());
                 }
                 totalUnpacked += data.length;
                 if (totalUnpacked > Limits.MAX_TOTAL_UNPACKED_BYTES) {
@@ -149,6 +157,39 @@ public final class ArchiveValidator {
         return manifest;
     }
 
+    /**
+     * Читает запись полностью и сверяет фактический CRC-32 и размер с заявленными
+     * (PKG-02). Одновременно следит за лимитом распакованных байтов (PKG-03).
+     */
+    private static byte[] readAndVerify(InputStream in, ZipEntry entry, String name)
+            throws IOException {
+        long limit = entryLimitFor(name);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CRC32 crc = new CRC32();
+        byte[] buffer = new byte[8192];
+        long total = 0;
+        int read;
+        while ((read = in.read(buffer)) != -1) {
+            total += read;
+            if (total > limit) {
+                throw new EntryTooLargeException(
+                        "Entry '" + name + "' exceeds limit of " + limit + " bytes");
+            }
+            crc.update(buffer, 0, read);
+            out.write(buffer, 0, read);
+        }
+        long declaredSize = entry.getSize();
+        if (declaredSize >= 0 && declaredSize != total) {
+            throw new IOException("declared size " + declaredSize + " != actual " + total);
+        }
+        long declaredCrc = entry.getCrc();
+        if (declaredCrc >= 0 && declaredCrc != crc.getValue()) {
+            throw new IOException("CRC mismatch (declared 0x" + Long.toHexString(declaredCrc)
+                    + ", actual 0x" + Long.toHexString(crc.getValue()) + ')');
+        }
+        return out.toByteArray();
+    }
+
     private static long entryLimitFor(String name) {
         if ("module.json".equals(name)) {
             return Limits.MAX_DESCRIPTOR_BYTES;
@@ -180,93 +221,89 @@ public final class ArchiveValidator {
         return Result.ok(null);
     }
 
-    private static byte[] readLimited(InputStream in, long limit, String name) throws IOException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        byte[] buffer = new byte[8192];
-        long total = 0;
-        int read;
-        while ((read = in.read(buffer)) != -1) {
-            total += read;
-            if (total > limit) {
-                throw new EntryTooLargeException(
-                        "Entry '" + name + "' exceeds limit of " + limit + " bytes");
-            }
-            out.write(buffer, 0, read);
-        }
-        return out.toByteArray();
-    }
+    // --- Центральный каталог --------------------------------------------------
 
-    /** Превышен лимит распакованного размера отдельной записи (PKG-03). */
-    private static final class EntryTooLargeException extends IOException {
-        EntryTooLargeException(String message) {
-            super(message);
-        }
-    }
-
-    // --- Сканирование локальных заголовков ------------------------------------
-
-    private static final class LocalHeader {
+    private static final class CentralEntry {
         final String name;
         final boolean encrypted;
 
-        LocalHeader(String name, boolean encrypted) {
+        CentralEntry(String name, boolean encrypted) {
             this.name = name;
             this.encrypted = encrypted;
         }
     }
 
-    private static Result<List<LocalHeader>> scanLocalHeaders(Path zipPath) {
-        List<LocalHeader> headers = new ArrayList<>();
-        try (InputStream in = Files.newInputStream(zipPath)) {
-            byte[] header = new byte[30];
-            while (true) {
-                int read = readFully(in, header);
-                if (read < 4) {
+    /**
+     * Читает центральный каталог, чтобы увидеть флаги записей (шифрование) и
+     * имена до открытия архива. Zip64 не поддерживается: при лимите 64 MiB он
+     * не нужен, а его наличие говорит о нестандартном архиве.
+     */
+    private static Result<List<CentralEntry>> scanCentralDirectory(Path zipPath) {
+        try (RandomAccessFile raf = new RandomAccessFile(zipPath.toFile(), "r")) {
+            long length = raf.length();
+            if (length < EOCD_MIN_SIZE) {
+                return Result.fail("ARCHIVE_CORRUPT",
+                        "File is too small to be a ZIP archive: " + length + " bytes");
+            }
+            int searchSize = (int) Math.min(length, EOCD_MIN_SIZE + EOCD_MAX_COMMENT);
+            byte[] tail = new byte[searchSize];
+            raf.seek(length - searchSize);
+            raf.readFully(tail);
+
+            long eocdOffsetInTail = -1;
+            for (int i = tail.length - EOCD_MIN_SIZE; i >= 0; i--) {
+                if (readUIntLE(tail, i) == EOCD_SIGNATURE) {
+                    eocdOffsetInTail = i;
                     break;
                 }
-                long signature = readUIntLE(header, 0);
-                if (signature == 0x04034B50L) {
-                    if (read < 30) {
-                        return Result.fail("ARCHIVE_CORRUPT", "Truncated local file header");
-                    }
-                    int flags = (header[6] & 0xFF) | ((header[7] & 0xFF) << 8);
-                    int nameLen = (header[26] & 0xFF) | ((header[27] & 0xFF) << 8);
-                    int extraLen = (header[28] & 0xFF) | ((header[29] & 0xFF) << 8);
-                    long compressedSize = readUIntLE(header, 18);
-                    byte[] nameBytes = new byte[nameLen];
-                    if (readFully(in, nameBytes) != nameLen) {
-                        return Result.fail("ARCHIVE_CORRUPT", "Truncated entry name");
-                    }
-                    if (!skipFully(in, extraLen)) {
-                        return Result.fail("ARCHIVE_CORRUPT", "Truncated extra field");
-                    }
-                    String name = new String(nameBytes, StandardCharsets.UTF_8);
-                    headers.add(new LocalHeader(name, (flags & 0x1) != 0));
-                    // Data descriptor (флаг 3) означает размер в trailer'е — такие
-                    // архивы java.util.zip читает, но наше сканирование не может
-                    // пропустить данные; сообщаем явно.
-                    if ((flags & 0x8) != 0) {
-                        return Result.fail("ARCHIVE_UNSUPPORTED_METHOD",
-                                "Streaming entry with data descriptor is not supported: " + name);
-                    }
-                    if (!skipFully(in, compressedSize)) {
-                        return Result.fail("ARCHIVE_CORRUPT",
-                                "Truncated entry data: " + name);
-                    }
-                } else if (signature == 0x02014B50L || signature == 0x06054B50L) {
-                    break; // Центральный каталог / EOCD: данные записей закончились.
-                } else {
-                    return Result.fail("ARCHIVE_CORRUPT",
-                            "Unexpected ZIP signature 0x" + Long.toHexString(signature));
-                }
             }
+            if (eocdOffsetInTail < 0) {
+                return Result.fail("ARCHIVE_CORRUPT",
+                        "End of central directory record not found");
+            }
+            int eocd = (int) eocdOffsetInTail;
+            int entryCount = readUShort(tail, eocd + 10);
+            long cdSize = readUIntLE(tail, eocd + 12);
+            long cdOffset = readUIntLE(tail, eocd + 16);
+            if (cdOffset == 0xFFFFFFFFL || cdSize == 0xFFFFFFFFL || entryCount == 0xFFFF) {
+                return Result.fail("ARCHIVE_UNSUPPORTED_METHOD",
+                        "Zip64 archives are not supported and are not needed under the "
+                                + Limits.MAX_ARCHIVE_FILE_BYTES + " byte limit");
+            }
+            if (cdOffset + cdSize > length) {
+                return Result.fail("ARCHIVE_CORRUPT",
+                        "Central directory offset/size point outside the file");
+            }
+
+            List<CentralEntry> entries = new ArrayList<>(entryCount);
+            raf.seek(cdOffset);
+            byte[] header = new byte[46];
+            for (int i = 0; i < entryCount; i++) {
+                raf.readFully(header);
+                if (readUIntLE(header, 0) != CD_SIGNATURE) {
+                    return Result.fail("ARCHIVE_CORRUPT",
+                            "Bad central directory signature at entry " + i);
+                }
+                int flags = readUShort(header, 8);
+                int nameLen = readUShort(header, 28);
+                int extraLen = readUShort(header, 30);
+                int commentLen = readUShort(header, 32);
+                byte[] nameBytes = new byte[nameLen];
+                raf.readFully(nameBytes);
+                if (extraLen > 0) {
+                    raf.skipBytes(extraLen);
+                }
+                if (commentLen > 0) {
+                    raf.skipBytes(commentLen);
+                }
+                entries.add(new CentralEntry(
+                        new String(nameBytes, StandardCharsets.UTF_8), (flags & 0x1) != 0));
+            }
+            // Пустой архив формально валиден: отклонит его проверка состава пакета.
+            return Result.ok(entries);
         } catch (IOException e) {
             return Result.fail("ARCHIVE_UNREADABLE", "Cannot read archive: " + e.getMessage());
         }
-        if (headers.isEmpty()) {
-            return Result.fail("ARCHIVE_CORRUPT", "No local file headers found in archive");
-        }
-        return Result.ok(headers);
     }
 
     private static long readUIntLE(byte[] data, int offset) {
@@ -276,28 +313,14 @@ public final class ArchiveValidator {
                 | ((data[offset + 3] & 0xFFL) << 24);
     }
 
-    private static int readFully(InputStream in, byte[] buffer) throws IOException {
-        int total = 0;
-        while (total < buffer.length) {
-            int read = in.read(buffer, total, buffer.length - total);
-            if (read == -1) {
-                break;
-            }
-            total += read;
-        }
-        return total;
+    private static int readUShort(byte[] data, int offset) {
+        return (data[offset] & 0xFF) | ((data[offset + 1] & 0xFF) << 8);
     }
 
-    private static boolean skipFully(InputStream in, long count) throws IOException {
-        long remaining = count;
-        byte[] scratch = new byte[8192];
-        while (remaining > 0) {
-            int read = in.read(scratch, 0, (int) Math.min(scratch.length, remaining));
-            if (read == -1) {
-                return false;
-            }
-            remaining -= read;
+    /** Превышен лимит распакованного размера отдельной записи (PKG-03). */
+    private static final class EntryTooLargeException extends IOException {
+        EntryTooLargeException(String message) {
+            super(message);
         }
-        return true;
     }
 }
