@@ -33,6 +33,63 @@ ext.resolveAndroidJar = { int platformVersion ->
     return null
 }
 
+// Корень SDK: те же источники, что и для android.jar.
+ext.resolveSdkDir = {
+    def candidates = []
+    def envHome = System.getenv('ANDROID_HOME') ?: System.getenv('ANDROID_SDK_ROOT')
+    if (envHome) {
+        candidates << envHome
+    }
+    def localProps = rootProject.file('local.properties')
+    if (localProps.exists()) {
+        def props = new Properties()
+        localProps.withInputStream { props.load(it) }
+        def sdkDir = props.getProperty('sdk.dir')
+        if (sdkDir) {
+            candidates << sdkDir
+        }
+    }
+    candidates << "${System.getProperty('user.home')}/Android/Sdk"
+    candidates << "${System.getProperty('user.home')}/Library/Android/sdk"
+    candidates << '/usr/local/lib/android/sdk'
+    candidates << '/opt/android-sdk'
+    for (def candidate : candidates) {
+        def dir = new File(candidate.toString())
+        if (dir.isDirectory()) {
+            return dir
+        }
+    }
+    return null
+}
+
+// d8.jar из build-tools: D8 CLI без загрузки r8 из Maven (детерминированнее).
+ext.resolveD8Jar = {
+    def sdk = resolveSdkDir()
+    if (sdk == null) {
+        return null
+    }
+    def buildTools = new File(sdk, 'build-tools')
+    if (!buildTools.isDirectory()) {
+        return null
+    }
+    def versions = buildTools.listFiles()?.findAll { it.isDirectory() }?.sort { a, b ->
+        b.name <=> a.name
+    }
+    for (def version : (versions ?: [])) {
+        def jar = new File(version, 'lib/d8.jar')
+        if (jar.isFile()) {
+            return jar
+        }
+        // В старых build-tools классы лежат прямо в lib/*.jar
+        def libs = new File(version, 'lib')
+        def candidate = libs.listFiles()?.find { it.name.startsWith('d8') && it.name.endsWith('.jar') }
+        if (candidate != null) {
+            return candidate
+        }
+    }
+    return null
+}
+
 ext.requireAndroidJar = { int platformVersion, String moduleName ->
     def jar = resolveAndroidJar(platformVersion)
     if (jar == null) {

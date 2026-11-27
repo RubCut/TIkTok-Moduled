@@ -344,6 +344,7 @@ public final class PatcherActivity extends BaseScreenActivity {
                     return;
                 }
                 PatchOutcome outcome = patched.value();
+                saveLastPatchReport(outcome);
                 patchButton.setEnabled(false);
                 column.addView(title(outcome.succeeded()
                         ? getString(R.string.patcher_done, outputName)
@@ -354,9 +355,57 @@ public final class PatcherActivity extends BaseScreenActivity {
                 if (!outcome.succeeded()) {
                     Dialogs.showError(this, getString(R.string.patcher_failed),
                             String.join("\n", outcome.blockers));
+                    return;
                 }
+                offerBundledRegionModule();
             });
         });
+    }
+
+    /** Отчёт последнего патча сохраняется для экрана доступов (§15.2, diff manifest). */
+    private void saveLastPatchReport(PatchOutcome outcome) {
+        try {
+            java.nio.file.Files.write(
+                    new File(app().storageRoot(), AccessActivity.LAST_PATCH_DIFF_FILE).toPath(),
+                    outcome.toReportText().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            // Отчёт не критичен для результата патча: экран доступов покажет пустое состояние.
+        }
+    }
+
+    /**
+     * §16.1: после успешного патча предлагается комплектный модуль региона.
+     * Установка выполняется обычным порядком — модуль ставится выключенным.
+     */
+    private void offerBundledRegionModule() {
+        List<String> bundled = dev.moduled.manager.BundledModules.list(this);
+        String region = null;
+        for (String asset : bundled) {
+            if (asset.contains("region")) {
+                region = asset;
+                break;
+            }
+        }
+        if (region == null) {
+            return;
+        }
+        final String assetName = region;
+        Dialogs.confirmWithConsequences(this,
+                getString(R.string.modules_install_bundled),
+                getString(R.string.modules_bundled_offer_region),
+                "модуль региона подменяет региональные параметры только на уровне "
+                        + "приложения и не меняет IP, SIM, GPS и регион аккаунта (§16.4)",
+                getString(R.string.catalog_install),
+                () -> AppExecutors.get().background(() -> {
+                    Result<dev.moduled.manager.storage.InstallOutcome> installed =
+                            dev.moduled.manager.BundledModules.install(this, app(), assetName);
+                    AppExecutors.get().main(() -> {
+                        if (!installed.isOk()) {
+                            Dialogs.showError(this, getString(R.string.state_error),
+                                    installed.errorCode() + ": " + installed.errorMessage());
+                        }
+                    });
+                }));
     }
 
     /**

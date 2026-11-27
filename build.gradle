@@ -22,6 +22,10 @@ buildscript {
     }
 }
 
+// resolveAndroidJar/requireAndroidJar доступны всем подпроектам через rootProject.
+// Применяется ПОСЛЕ buildscript: в Gradle buildscript-блок обязан идти первым.
+apply from: 'gradle/android-jar.gradle'
+
 tasks.register('clean', Delete) {
     delete rootProject.layout.buildDirectory
 }

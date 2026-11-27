@@ -1,0 +1,77 @@
+// Сборка пакетов модулей (ТЗ §10.1): ZIP ровно из двух записей —
+// module.json + classes.dex. Классы компилируются против module-api и
+// android.jar, затем дексируются D8 (com.android.tools:r8) и упаковываются.
+//
+// Подключается из sample-module, region-module и inapp-manager.
+apply plugin: 'java-library'
+apply from: rootProject.file('gradle/android-jar.gradle')
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+def androidJarFile = requireAndroidJar(rootProject.ext.compileSdkVersion, project.name)
+
+dependencies {
+    compileOnly project(':module-api')
+    compileOnly files(androidJarFile)
+    testImplementation project(':module-api')
+    testImplementation files(androidJarFile)
+    testImplementation "junit:junit:$rootProject.ext.junitVersion"
+}
+
+def dexOutDir = layout.buildDirectory.dir("dex")
+def packageOutDir = layout.buildDirectory.dir("outputs/module-package")
+
+def d8Jar = rootProject.resolveD8Jar()
+
+tasks.register('dexClasses', JavaExec) {
+    group = 'build'
+    description = 'Dexes module classes with D8 из build-tools (min-api = minSdk).'
+    dependsOn tasks.named('jar')
+    if (d8Jar == null) {
+        enabled = false
+    }
+    classpath = d8Jar != null ? files(d8Jar) : files()
+    mainClass = 'com.android.tools.r8.D8'
+    outputs.dir(dexOutDir)
+    doFirst {
+        if (d8Jar == null) {
+            throw new GradleException("[$project.name] d8.jar не найден в build-tools SDK: " +
+                    'установите build-tools или задайте ANDROID_HOME')
+        }
+        def outDir = dexOutDir.get().asFile
+        outDir.mkdirs()
+        args = [
+                '--output', outDir.absolutePath,
+                '--lib', androidJarFile.absolutePath,
+                '--min-api', rootProject.ext.minSdkVersion.toString(),
+                tasks.named('jar').get().archiveFile.get().asFile.absolutePath
+        ]
+    }
+}
+
+tasks.register('packageModule', Zip) {
+    group = 'build'
+    description = 'Packages module.json + classes.dex into the module ZIP (§10.1).'
+    dependsOn tasks.named('dexClasses')
+    archiveBaseName = project.name
+    archiveExtension = 'zip'
+    destinationDirectory = packageOutDir
+    from(file('src/main/module/module.json'))
+    from(dexOutDir) {
+        include 'classes.dex'
+    }
+}
+
+tasks.named('assemble') {
+    dependsOn tasks.named('packageModule')
+}
+
+tasks.withType(Test).configureEach {
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        exceptionFormat 'full'
+    }
+}

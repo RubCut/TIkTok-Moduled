@@ -1,0 +1,10 @@
+{
+  "id": "dev.moduled.region",
+  "name": "Модуль региона",
+  "description": "Комплектный модуль региона: подменяет региональные параметры НА УРОВНЕ ПРИЛОЖЕНИЯ (локаль, страна SIM по данным приложения, заголовки запросов, если это поддержано адаптером). Не меняет IP-адрес, SIM-карту, GPS и регион аккаунта. Различает локальную подмену и фактический ответ сервера.",
+  "version": "1.0.0",
+  "versionCode": 1,
+  "apiVersion": 1,
+  "entrypoint": "dev.moduled.region.RegionModule",
+  "targetPackages": ["com.zhiliaoapp.musically", "dev.moduled.demo.host"]
+}

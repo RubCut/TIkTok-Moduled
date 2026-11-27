@@ -43,6 +43,8 @@ public final class ModulesActivity extends BaseScreenActivity {
         column.addView(button(getString(R.string.modules_install_file), v -> pickModuleFile()));
         column.addView(button(getString(R.string.modules_disable_all), v -> confirmDisableAll()));
         column.addView(button(getString(R.string.modules_restart_host), v -> restartHost()));
+        column.addView(button(getString(R.string.modules_install_bundled),
+                v -> showBundledDialog()));
         LinearLayout list = new LinearLayout(this);
         list.setOrientation(LinearLayout.VERTICAL);
         list.setTag("module-list");
@@ -176,6 +178,46 @@ public final class ModulesActivity extends BaseScreenActivity {
                     }
                     AppExecutors.get().main(this::refresh);
                 }));
+    }
+
+    /**
+     * Комплектные модули (§11.11, §16.1): список из assets, установка обычным
+     * порядком. Модуль региона предлагается явно.
+     */
+    private void showBundledDialog() {
+        List<String> assets = dev.moduled.manager.BundledModules.list(this);
+        if (assets.isEmpty()) {
+            Dialogs.showError(this, getString(R.string.modules_install_bundled),
+                    getString(R.string.modules_bundled_none));
+            return;
+        }
+        String[] items = assets.toArray(new String[0]);
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.modules_install_bundled)
+                .setItems(items, (dialog, which) -> installBundled(items[which]))
+                .setNegativeButton(R.string.action_cancel, null)
+                .show();
+    }
+
+    private void installBundled(String assetName) {
+        AppExecutors.get().background(() -> {
+            Result<InstallOutcome> result =
+                    dev.moduled.manager.BundledModules.install(this, app(), assetName);
+            AppExecutors.get().main(() -> {
+                if (result.isOk()) {
+                    Dialogs.showError(this, getString(R.string.modules_install_bundled),
+                            getString(R.string.modules_new_installed_disabled));
+                } else if ("INSTALL_REQUIRES_CONFIRMATION".equals(result.errorCode())
+                        || "INSTALL_KEY_CHANGED".equals(result.errorCode())) {
+                    Dialogs.confirmReplaceModule(this, assetName, result.errorMessage(), () -> {
+                    });
+                } else {
+                    Dialogs.showError(this, getString(R.string.state_error),
+                            result.errorCode() + ": " + result.errorMessage());
+                }
+                refresh();
+            });
+        });
     }
 
     private void restartHost() {

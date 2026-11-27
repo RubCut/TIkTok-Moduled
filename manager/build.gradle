@@ -48,9 +48,91 @@ android {
             excludes += ['META-INF/*.version', 'META-INF/LICENSE*']
         }
     }
+
+    // Сгенерированные assets: runtime DEX (PAT-05) и комплектные модули (§11.11).
+    sourceSets {
+        main {
+            assets.srcDir layout.buildDirectory.dir('generated/runtime-assets')
+        }
+    }
+}
+
+// --- Встраивание runtime DEX и комплектных модулей в assets менеджера -------
+// Патчер берёт runtime-classes.dex из assets (§7.2 PAT-05); комплектные модули
+// (sample, region, inapp-manager) поставляются готовыми ZIP и устанавливаются
+// как обычные модули с отметкой «комплектный» (§11.11, §16.1).
+def runtimeAssetsDir = layout.buildDirectory.dir('generated/runtime-assets')
+
+tasks.register('bundleRuntimeDex') {
+    group = 'build'
+    description = 'Dexes runtime+core+module-api into assets/tmoduled/runtime-classes.dex.'
+    dependsOn ':runtime:assembleRelease', ':core:jar', ':module-api:jar'
+    def outDir = runtimeAssetsDir.map { it.dir('tmoduled') }
+    outputs.dir(outDir)
+    doLast {
+        def sdkJar = rootProject.requireAndroidJar(rootProject.ext.compileSdkVersion, 'manager')
+        def aar = project(':runtime').file('build/outputs/aar/runtime-release.aar')
+        if (!aar.isFile()) {
+            throw new GradleException("AAR runtime не найден: ${aar}")
+        }
+        def work = layout.buildDirectory.dir('runtime-dex-work').get().asFile
+        delete work
+        work.mkdirs()
+        copy {
+            from zipTree(aar)
+            into work
+            include 'classes.jar'
+        }
+        def coreJar = project(':core').tasks.named('jar').get().archiveFile.get().asFile
+        def apiJar = project(':module-api').tasks.named('jar').get().archiveFile.get().asFile
+        def od = outDir.get().asFile
+        od.mkdirs()
+        def d8Jar = rootProject.resolveD8Jar()
+        if (d8Jar == null) {
+            throw new GradleException('d8.jar не найден в build-tools SDK: задайте ANDROID_HOME')
+        }
+        javaexec {
+            classpath = files(d8Jar)
+            mainClass = 'com.android.tools.r8.D8'
+            args = [
+                    '--output', od.absolutePath,
+                    '--lib', sdkJar.absolutePath,
+                    '--classpath', sdkJar.absolutePath,
+                    '--min-api', rootProject.ext.minSdkVersion.toString(),
+                    new File(work, 'classes.jar').absolutePath,
+                    coreJar.absolutePath,
+                    apiJar.absolutePath
+            ]
+        }
+        if (!new File(od, 'classes.dex').isFile()) {
+            throw new GradleException('D8 не создал classes.dex для runtime payload')
+        }
+    }
+}
+
+tasks.register('bundleModuleZips', Copy) {
+    group = 'build'
+    description = 'Copies bundled module ZIPs into assets/tmoduled/bundled.'
+    dependsOn ':sample-module:packageModule', ':region-module:packageModule',
+            ':inapp-manager:packageModule'
+    into runtimeAssetsDir.map { it.dir('tmoduled/bundled') }
+    from project(':sample-module').layout.buildDirectory.dir('outputs/module-package')
+    from project(':region-module').layout.buildDirectory.dir('outputs/module-package')
+    from project(':inapp-manager').layout.buildDirectory.dir('outputs/module-package')
+    include '*.zip'
+    // Имена файлов должны быть стабильны: sample-module.zip и т.д.
+    eachFile { details ->
+        details.name = details.name.replaceAll('-\d+(\.\d+)*', '')
+    }
+    includeEmptyDirs = false
+}
+
+tasks.named('preBuild') {
+    dependsOn tasks.named('bundleRuntimeDex'), tasks.named('bundleModuleZips')
 }
 
 dependencies {
+    // :runtime собирается как AAR-вход для D8 (задача bundleRuntimeDex).
     implementation project(':core')
     implementation project(':standalone-ui')
     implementation project(':patcher')

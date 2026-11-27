@@ -1,0 +1,4 @@
+// sample-module: эталонный модуль-пример (ТЗ §5.1, §10.1). Демонстрирует
+// контракт автора: логирование с ID модуля, снимок конфига, честная
+// диагностика недоступного hook backend.
+apply from: rootProject.file('gradle/module-package.gradle')

@@ -61,6 +61,9 @@
     <string name="modules_bundled_badge">комплектный</string>
     <string name="modules_new_installed_disabled">Новый сторонний модуль установлен ВЫКЛЮЧЕННЫМ (§11.8)</string>
     <string name="modules_restart_host">Перезапустить хост</string>
+    <string name="modules_install_bundled">Комплектные модули</string>
+    <string name="modules_bundled_none">В этой сборке нет комплектных модулей (assets/tmoduled/bundled пуст).</string>
+    <string name="modules_bundled_offer_region">Установить комплектный модуль региона? Он устанавливается выключенным и применяется только после перезапуска хоста.</string>
     <string name="modules_confirm_disable_all">Отключить все модули? Изменения применятся после следующего запуска хоста.</string>
 
     <!-- Карточка модуля -->

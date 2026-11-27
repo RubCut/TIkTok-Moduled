@@ -1,0 +1,42 @@
+// demo-host: тестовое приложение-хост (ТЗ §5.1, §26.2).
+// Заменяет TikTok при приёмке на эмуляторе: патчится тем же патчером, имеет
+// отметку «тестовый хост» в UI и общем debug-сертификате с менеджером (§20.1).
+apply plugin: 'com.android.application'
+
+android {
+    namespace 'dev.moduled.demo'
+    compileSdk rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId 'dev.moduled.demo.host'
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName '1.0.0-demo'
+        resourceConfigurations += ['ru', 'en']
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            // Тестовый хост поставляется только в debug-подписи (§26.2).
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError true
+        textReport true
+    }
+}
+
+dependencies {
+    implementation project(':standalone-ui')
+}

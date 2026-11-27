@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Демо-хост TModules</string>
+    <string name="demo_banner">ТЕСТОВЫЙ ХОСТ: это не TikTok. Приложение используется для приёмки патчера и runtime на эмуляторе (§26.2).</string>
+    <string name="demo_runtime_status">Состояние runtime</string>
+    <string name="demo_runtime_absent">Runtime не встроен: это непатченый демо-хост. Отпатчуйте APK в TModules, чтобы получить встроенный runtime.</string>
+    <string name="demo_bridge_title">Мост менеджера</string>
+    <string name="demo_bridge_note">Мост менеджера: authority dev.moduled.manager.bridge, permission уровня signature. Демо-хост собирается общим debug-ключом, поэтому мост доступен (§20.1).</string>
+</resources>
