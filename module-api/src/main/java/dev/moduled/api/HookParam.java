@@ -58,7 +58,7 @@ public final class HookParam {
      */
     public void setResult(Object value) {
         this.result = value;
-        this.throwsImmediately = false;
+        this.throwable = null;
         this.returnsImmediately = true;
     }
 

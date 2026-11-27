@@ -37,12 +37,20 @@ def main(paths) -> int:
         print(f"\n===== {path} (last 120 of {len(lines)} lines) =====")
         for line in lines[-120:]:
             sys.stdout.write(line)
-        interesting = [
-            line.rstrip("\n")
-            for line in lines
-            if re.search(r"(?i)(FAILURE|error:|Exception|What went wrong|Caused by|> Task .* FAILED|Execution failed)", line)
-        ]
-        summary = interesting[-40:] if interesting else [line.rstrip("\n") for line in lines[-25:]]
+        pattern = re.compile(
+            r"(?i)(FAILURE|error:|warning: \[|Exception|What went wrong|Caused by|"
+            r"> Task .* FAILED|Execution failed|symbol:|location:|\^)")
+        interesting = []
+        for index, line in enumerate(lines):
+            if pattern.search(line):
+                # Берём саму строку и две следующие: javac печатает "symbol:" и
+                # "location:" отдельными строками, а Gradle — причину ниже.
+                for extra in range(0, 3):
+                    if index + extra < len(lines):
+                        candidate = lines[index + extra].rstrip("\n")
+                        if candidate not in interesting:
+                            interesting.append(candidate)
+        summary = interesting[-60:] if interesting else [line.rstrip("\n") for line in lines[-25:]]
         emit("error", f"[{os.path.basename(path)}]\n" + "\n".join(summary))
     if not found:
         emit("error", "CI failed and no log files were produced.")

@@ -1,0 +1,38 @@
+// runtime: bootstrap, загрузка DEX, хуки, снимки, журналирование, safe mode (ТЗ §5.1).
+// Встраивается в патченный хост, поэтому НЕ зависит от standalone-ui и MD3 (ТЗ §21.1).
+apply plugin: 'com.android.library'
+
+android {
+    namespace 'dev.moduled.runtime'
+    compileSdk rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        minSdk rootProject.ext.minSdkVersion
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError true
+        warningsAsErrors false
+        textReport true
+    }
+}
+
+dependencies {
+    // Контракт автора модуля виден потребителям runtime.
+    api project(':module-api')
+    implementation project(':core')
+
+    testImplementation "junit:junit:$rootProject.ext.junitVersion"
+}
