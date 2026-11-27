@@ -37,20 +37,29 @@ public final class BridgeProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        Context context = requireContext();
+        Context context = contextOrThrow();
         File storageRoot = new File(context.getFilesDir(), "tmoduled");
         modules = new ModuleStore(new File(storageRoot, "modules"));
         snapshots = new SnapshotStore(new File(storageRoot, "modules"));
         return true;
     }
 
-    // requireContext() унаследован от ContentProvider (API 26+, minSdk 28):
-    // переопределять его нельзя (final), а поведение то же — IllegalStateException
-    // при отсутствии контекста.
+    /**
+     * Контекст провайдера или явный сбой. Унаследованный
+     * {@code ContentProvider.requireContext()} здесь неприменим: он требует
+     * API 30, а minSdk — 28 (NewApi).
+     */
+    private Context contextOrThrow() {
+        Context context = getContext();
+        if (context == null) {
+            throw new IllegalStateException("BridgeProvider has no context");
+        }
+        return context;
+    }
 
     @Override
     public Bundle call(String method, String arg, Bundle extras) {
-        Result<String> caller = BridgeGuard.verifyCaller(requireContext(), getCallingPackage());
+        Result<String> caller = BridgeGuard.verifyCaller(contextOrThrow(), getCallingPackage());
         Bundle response = new Bundle();
         if (!caller.isOk()) {
             response.putBoolean(BridgeContract.KEY_OK, false);
@@ -150,7 +159,7 @@ public final class BridgeProvider extends ContentProvider {
         }
         // Менеджер хранит копию события для экрана диагностики. Авторитетная
         // защёлка живёт в хосте: она работает и при недоступном менеджере.
-        EventJournal.append(requireContext(), eventType, eventKey);
+        EventJournal.append(contextOrThrow(), eventType, eventKey);
         response.putString(BridgeContract.KEY_MESSAGE, "Событие принято в журнал менеджера");
         return response;
     }
@@ -168,7 +177,7 @@ public final class BridgeProvider extends ContentProvider {
         if (!readOnly.isOk()) {
             throw new FileNotFoundException(readOnly.errorMessage());
         }
-        Result<String> caller = BridgeGuard.verifyCaller(requireContext(), getCallingPackage());
+        Result<String> caller = BridgeGuard.verifyCaller(contextOrThrow(), getCallingPackage());
         if (!caller.isOk()) {
             throw new FileNotFoundException(caller.errorCode() + ": " + caller.errorMessage());
         }
@@ -178,7 +187,7 @@ public final class BridgeProvider extends ContentProvider {
         }
         String kind = segments.get(0);
         String parameter = segments.get(1);
-        File storageRoot = new File(requireContext().getFilesDir(), "tmoduled/modules");
+        File storageRoot = new File(contextOrThrow().getFilesDir(), "tmoduled/modules");
         File target;
         switch (kind) {
             case BridgeContract.PATH_DEX: {
