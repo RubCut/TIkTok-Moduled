@@ -1,0 +1,65 @@
+// manager: TModules — патчер, хранилище модулей, мост, редактор конфигов,
+// каталог, диагностика и управление состояниями (ТЗ §5.1, §11, §21.2).
+apply plugin: 'com.android.application'
+
+android {
+    namespace 'dev.moduled.manager'
+    compileSdk rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId 'dev.moduled.manager'
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName '0.1.0'
+        // Основной язык первой поставки — русский (§21.3).
+        resourceConfigurations += ['ru', 'en']
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+
+    buildTypes {
+        debug {
+            // applicationId не меняется: мост использует signature-permission и
+            // общий debug-сертификат с тестовым хостом (ТЗ §20.1).
+            minifyEnabled false
+        }
+        release {
+            // Production-модель подписи решается отдельным ADR (§7.4, ADR-005):
+            // релизный артефакт не подписывается debug-ключом.
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError true
+        textReport true
+    }
+
+    packagingOptions {
+        resources {
+            excludes += ['META-INF/*.version', 'META-INF/LICENSE*']
+        }
+    }
+}
+
+dependencies {
+    implementation project(':core')
+    implementation project(':standalone-ui')
+    implementation project(':patcher')
+
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.activity:activity:1.9.3'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.8.6'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-savedstate:2.8.6'
+
+    testImplementation "junit:junit:$rootProject.ext.junitVersion"
+}

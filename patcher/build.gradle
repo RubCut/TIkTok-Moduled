@@ -1,0 +1,30 @@
+// patcher: анализ APK, профиль совместимости, план изменений, сборка, подпись и
+// проверка результата (ТЗ §5.1, §7). Чистый Java: анализ и планирование
+// тестируются на JVM без эмулятора.
+plugins {
+    id 'java-library'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+dependencies {
+    api project(':core')
+    // APK Signature Scheme v1/v2/v3: официальная библиотека подписи Android.
+    // Чистый Java, работает и на устройстве, и в JVM-тестах.
+    implementation "com.android.tools.build:apksig:8.6.1"
+    // Генерация самоподписанного сертификата для разработческого ключа (§7.8).
+    // Классы org.bouncycastle.* не конфликтуют с платформенным BC в Android:
+    // там он перемещён в com.android.org.bouncycastle.
+    implementation 'org.bouncycastle:bcpkix-jdk18on:1.78.1'
+    testImplementation "junit:junit:$rootProject.ext.junitVersion"
+}
+
+tasks.withType(Test).configureEach {
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+        exceptionFormat 'full'
+    }
+}

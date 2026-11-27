@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Русский — язык первой поставки (ТЗ §21.3). Все строки только в ресурсах. -->
+<resources>
+    <string name="app_name">TModules</string>
+
+    <!-- Экраны (§21.2) -->
+    <string name="screen_main">TModules</string>
+    <string name="screen_patcher">Патчер</string>
+    <string name="screen_modules">Модули</string>
+    <string name="screen_module_card">Карточка модуля</string>
+    <string name="screen_editor">Редактор конфига</string>
+    <string name="screen_catalog">Каталог</string>
+    <string name="screen_access">Доступы</string>
+    <string name="screen_diagnostics">Диагностика</string>
+    <string name="screen_settings">Настройки</string>
+
+    <!-- Мост и permission (§20.1) -->
+    <string name="bridge_permission_label">Доступ к мосту TModules</string>
+    <string name="bridge_permission_description">Позволяет патченному приложению с той же подписью читать снимок конфигурации модулей и отправлять события диагностики. Не даёт доступа к файлам и настройкам других приложений.</string>
+
+    <!-- Главное -->
+    <string name="main_bridge_title">Мост менеджер ↔ runtime</string>
+    <string name="main_bridge_ready">Мост зарегистрирован: %1$s</string>
+    <string name="main_bridge_unknown">Мост не зарегистрирован</string>
+    <string name="main_snapshot_age">Снимок: поколение %1$d, возраст %2$s</string>
+    <string name="main_snapshot_none">Снимок ещё не публиковался</string>
+    <string name="main_snapshot_stale">Снимок устарел (старше 24 часов): %1$s</string>
+    <string name="main_modules_summary">Установлено модулей: %1$d, включено: %2$d</string>
+    <string name="main_pending_restart">Есть изменения, ожидающие перезапуска хоста</string>
+    <string name="main_no_pending">Все изменения применены</string>
+    <string name="main_open_patcher">Открыть патчер</string>
+    <string name="main_open_modules">Модули</string>
+    <string name="main_open_catalog">Каталог</string>
+    <string name="main_open_access">Доступы</string>
+    <string name="main_open_diagnostics">Диагностика</string>
+    <string name="main_open_settings">Настройки</string>
+
+    <!-- Патчер (§7) -->
+    <string name="patcher_pick_apk">Выбрать APK</string>
+    <string name="patcher_no_file">APK не выбран</string>
+    <string name="patcher_abi_title">ABI для native hook backend</string>
+    <string name="patcher_plan">Показать план</string>
+    <string name="patcher_run">Патчить и подписать</string>
+    <string name="patcher_running">Патч выполняется…</string>
+    <string name="patcher_done">Готово: %1$s</string>
+    <string name="patcher_failed">Патч остановлен</string>
+    <string name="patcher_original_untouched">Исходный APK не изменяется (§7.1)</string>
+    <string name="patcher_output_note">Готовый APK публикуется в /storage/emulated/0/tmoduled после всех проверок.</string>
+    <string name="patcher_signature_note">Ключ подписи создаётся один раз и хранится во внутреннем хранилище: обновления устанавливаются без удаления приложения. Конфликт подписи показывается до установки.</string>
+    <string name="patcher_copy_report">Скопировать отчёт</string>
+    <string name="patcher_payload_missing">Ресурсы платформы (runtime DEX) не найдены в этом билде: патч недоступен. Это честная диагностика, а не молчаливый отказ.</string>
+
+    <!-- Модули (§11) -->
+    <string name="modules_install_file">Установить из файла</string>
+    <string name="modules_disable_all">Отключить все</string>
+    <string name="modules_empty">Модулей нет. Установите из файла или из каталога.</string>
+    <string name="modules_state_enabled">Включён</string>
+    <string name="modules_state_disabled">Выключен</string>
+    <string name="modules_state_broken">Пакет повреждён</string>
+    <string name="modules_pending_apply">ожидает применения</string>
+    <string name="modules_bundled_badge">комплектный</string>
+    <string name="modules_new_installed_disabled">Новый сторонний модуль установлен ВЫКЛЮЧЕННЫМ (§11.8)</string>
+    <string name="modules_restart_host">Перезапустить хост</string>
+    <string name="modules_confirm_disable_all">Отключить все модули? Изменения применятся после следующего запуска хоста.</string>
+
+    <!-- Карточка модуля -->
+    <string name="card_version">Версия: %1$s (versionCode %2$d)</string>
+    <string name="card_source_local">Источник: локальный файл</string>
+    <string name="card_source_repo">Источник: репозиторий %1$s</string>
+    <string name="card_source_bundled">Источник: комплектный модуль</string>
+    <string name="card_trust_confirmed">Доверие подтверждено: %1$s</string>
+    <string name="card_trust_not_confirmed">Доверие не подтверждено — модуль выключен</string>
+    <string name="card_archive_hash">SHA-256 архива: %1$s</string>
+    <string name="card_config">Конфигурация</string>
+    <string name="card_open_editor">Редактировать конфиг</string>
+    <string name="card_update">Проверить обновление</string>
+    <string name="card_uninstall">Удалить</string>
+    <string name="card_uninstall_keep">Удалить и сохранить конфиг</string>
+    <string name="card_uninstall_delete">Удалить вместе с конфигом</string>
+    <string name="card_uninstall_question">Удалить модуль %1$s? Конфигурация по умолчанию сохраняется и будет восстановлена при повторной установке (§11.10, CFG-11).</string>
+    <string name="card_errors">Ошибки</string>
+    <string name="card_no_errors">Ошибок не зафиксировано</string>
+
+    <!-- Редактор конфига (§12) -->
+    <string name="editor_save">Сохранить</string>
+    <string name="editor_saved">Сохранено атомарно; применится после перезапуска хоста</string>
+    <string name="editor_save_failed">Сохранение не удалось: %1$s. Показано фактически сохранённое содержимое.</string>
+    <string name="editor_unsaved_title">Несохранённые изменения</string>
+    <string name="editor_unsaved_body">Черновик не сохранён. Сохранить перед выходом?</string>
+    <string name="editor_import">Импорт</string>
+    <string name="editor_export">Экспорт</string>
+    <string name="editor_module_note">Локальные изменения модуля не синхронизируются обратно в редактор (§12.6): показан снимок конфига.</string>
+    <string name="editor_content_description">Текст конфигурации модуля, моноширинный шрифт</string>
+
+    <!-- Каталог (§13) -->
+    <string name="catalog_refresh">Обновить каталог</string>
+    <string name="catalog_cancel">Отмена</string>
+    <string name="catalog_search_hint">Поиск по каталогу</string>
+    <string name="catalog_sources">Источники</string>
+    <string name="catalog_add_source">Добавить источник</string>
+    <string name="catalog_cached">Кэш от %1$s</string>
+    <string name="catalog_not_updated">Каталог не обновлялся</string>
+    <string name="catalog_error_keep_cache">Источник недоступен: %1$s. Показан последний валидный кэш.</string>
+    <string name="catalog_duplicate_id">Найден дубль ID %1$s в источниках. Выберите, какой descriptor использовать.</string>
+    <string name="catalog_install">Установить</string>
+    <string name="catalog_install_confirm">Установить модуль %1$s из %2$s? Модуль будет установлен ВЫКЛЮЧЕННЫМ и потребует подтверждения доверия перед включением.</string>
+    <string name="catalog_downloading">Скачивание…</string>
+    <string name="catalog_https_only">Разрешён только HTTPS; редиректы перепроверяются (§13.2)</string>
+
+    <!-- Доступы (§15.2): три раздельных понятия -->
+    <string name="access_capabilities_title">Возможности модуля</string>
+    <string name="access_capabilities_note">Что модуль заявляет в своём манифесте: хуки, конфиг, данные.</string>
+    <string name="access_host_permissions_title">Разрешения хоста</string>
+    <string name="access_host_permissions_note">Разрешения патченного приложения (TikTok). Патч не добавляет новых разрешений.</string>
+    <string name="access_manifest_diff_title">Патч manifest</string>
+    <string name="access_manifest_diff_note">Изменения AndroidManifest.xml: до → после. Это отдельное понятие, а не «разрешения модуля».</string>
+    <string name="access_dex_warning">Модули выполняются с правами процесса TikTok. Перед первым включением модуля показывается предупреждение о доверенном DEX (§14.2).</string>
+    <string name="access_shizuku_note">Shizuku и root не требуются; при их наличии диагностика отмечает доступный способ перезапуска.</string>
+
+    <!-- Диагностика (§16, §18, §22) -->
+    <string name="diagnostics_runtime_log">Журнал runtime</string>
+    <string name="diagnostics_crash_reports">Отчёты о сбоях</string>
+    <string name="diagnostics_bridge_info">Сведения о мосте</string>
+    <string name="diagnostics_snapshot">Снимок конфигурации</string>
+    <string name="diagnostics_b001">B-001: журнал исходного обработчика сбоев</string>
+    <string name="diagnostics_copy">Скопировать</string>
+    <string name="diagnostics_export">Экспорт</string>
+    <string name="diagnostics_empty">Данных нет</string>
+    <string name="diagnostics_safe_mode">Safe mode активен: модули не загружаются до сброса</string>
+    <string name="diagnostics_crash_coverage">Покрытие: только Java-сбои после установки обработчика. Native-сбои и ANR не покрыты (§18.3).</string>
+
+    <!-- Настройки (§21, §18) -->
+    <string name="settings_theme">Тема</string>
+    <string name="settings_theme_system">Системная</string>
+    <string name="settings_theme_light">Светлая</string>
+    <string name="settings_theme_dark">Тёмная</string>
+    <string name="settings_theme_dynamic">Динамические цвета</string>
+    <string name="settings_log_privacy">Подробность журналов</string>
+    <string name="settings_privacy_minimal">Минимальная</string>
+    <string name="settings_privacy_normal">Обычная</string>
+    <string name="settings_privacy_verbose">Подробная</string>
+    <string name="settings_auto_copy_crash">Автокопирование отчёта о сбое в буфер</string>
+    <string name="settings_auto_copy_note">По умолчанию выключено (§18.5). Кнопки «Скопировать» и экспорт доступны всегда.</string>
+    <string name="settings_about">О программе</string>
+    <string name="settings_about_body">TModules 0.1.0. Патчер, runtime и менеджер модулей. apiVersion: 1 (фиксирован, §9.4).</string>
+
+    <!-- Общее -->
+    <string name="action_close">Закрыть</string>
+    <string name="action_ok">ОК</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_save">Сохранить</string>
+    <string name="action_discard">Не сохранять</string>
+    <string name="state_error">Ошибка</string>
+    <string name="cd_back">Назад</string>
+</resources>

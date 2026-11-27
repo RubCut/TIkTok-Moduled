@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Каталог и репозитории: сеть нужна только по явному действию пользователя (§13.2). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!--
+      Мост менеджер ↔ runtime (ТЗ §20.1): signature-permission, поэтому доступ
+      получает только приложение с тем же сертификатом.
+    -->
+    <permission
+        android:name="dev.moduled.manager.permission.BRIDGE"
+        android:label="@string/bridge_permission_label"
+        android:description="@string/bridge_permission_description"
+        android:protectionLevel="signature" />
+    <uses-permission android:name="dev.moduled.manager.permission.BRIDGE" />
+
+    <application
+        android:name=".TModulesApplication"
+        android:allowBackup="false"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Moduled">
+
+        <!--
+          allowBackup=false: private storage содержит исполняемый код и снимки;
+          перенос на другое устройство не сохраняет доверие и подпись (§20.3).
+        -->
+
+        <activity
+            android:name=".ui.MainActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".ui.PatcherActivity" android:exported="false"
+            android:label="@string/screen_patcher" />
+        <activity android:name=".ui.ModulesActivity" android:exported="false"
+            android:label="@string/screen_modules" />
+        <activity android:name=".ui.ModuleDetailActivity" android:exported="false"
+            android:label="@string/screen_module_card" />
+        <activity android:name=".ui.ConfigEditorActivity" android:exported="false"
+            android:label="@string/screen_editor"
+            android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".ui.CatalogActivity" android:exported="false"
+            android:label="@string/screen_catalog" />
+        <activity android:name=".ui.AccessActivity" android:exported="false"
+            android:label="@string/screen_access" />
+        <activity android:name=".ui.DiagnosticsActivity" android:exported="false"
+            android:label="@string/screen_diagnostics" />
+        <activity android:name=".ui.SettingsActivity" android:exported="false"
+            android:label="@string/screen_settings" />
+
+        <!--
+          Мост: exported с signature-permission. Чувствительные операции
+          дополнительно проверяют вызывающий UID и сертификат (§20.2).
+        -->
+        <provider
+            android:name=".bridge.BridgeProvider"
+            android:authorities="dev.moduled.manager.bridge"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="dev.moduled.manager.permission.BRIDGE" />
+    </application>
+</manifest>

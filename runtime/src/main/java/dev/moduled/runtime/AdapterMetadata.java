@@ -36,7 +36,7 @@ public final class AdapterMetadata {
                 versionName = info.versionName != null ? info.versionName : "unknown";
                 versionCode = info.getLongVersionCode();
             }
-        } catch (RuntimeException e) {
+        } catch (android.content.pm.PackageManager.NameNotFoundException | RuntimeException e) {
             // Сведения о версии не критичны для запуска: останутся unknown.
         }
 
