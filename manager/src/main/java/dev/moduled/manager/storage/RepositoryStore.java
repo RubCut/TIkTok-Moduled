@@ -255,7 +255,7 @@ public final class RepositoryStore {
         try {
             String host = new java.net.URI(url).getHost();
             return host != null ? host : url;
-        } catch (RuntimeException e) {
+        } catch (java.net.URISyntaxException | RuntimeException e) {
             return url;
         }
     }
