@@ -250,7 +250,7 @@ public final class BinaryXmlReader {
         if (cursor < 0) {
             return Result.fail("AXML_TRUNCATED", "Обрезана длина UTF-8 строки");
         }
-        int byteLength = readLengthField(buffer, cursor, limit);
+        LengthField byteLength = readLengthField(buffer, cursor, limit);
         if (byteLength.value < 0) {
             return Result.fail("AXML_TRUNCATED", "Обрезана байтовая длина UTF-8 строки");
         }

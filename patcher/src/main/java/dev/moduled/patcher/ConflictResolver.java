@@ -144,7 +144,7 @@ public final class ConflictResolver {
                 "конфликт подписи: установленный пакет подписан "
                         + shortFingerprint(existingSignatureFingerprint) + ", новый — "
                         + shortFingerprint(newSignatureFingerprint)
-                        + ". Обновление без удаления невозможно.");
+                        + ". Обновление без удаления невозможно.", null);
     }
 
     public static Kind kindOf(String entry) {
