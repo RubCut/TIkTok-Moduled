@@ -1,0 +1,44 @@
+// Определение android.jar для чистых Java-модулей (module-api, sample-module,
+// region-module, inapp-manager). Они компилируются против API платформы, но не
+// являются Android-модулями: module-api намеренно не тянет MD3 (ТЗ §21.1),
+// а пакеты модулей должны превращаться в classes.dex, а не в AAR.
+//
+// SDK ищется в ANDROID_HOME / ANDROID_SDK_ROOT / local.properties / типовых путях.
+ext.resolveAndroidJar = { int platformVersion ->
+    def candidates = []
+    def envHome = System.getenv('ANDROID_HOME') ?: System.getenv('ANDROID_SDK_ROOT')
+    if (envHome) {
+        candidates << envHome
+    }
+    def localProps = rootProject.file('local.properties')
+    if (localProps.exists()) {
+        def props = new Properties()
+        localProps.withInputStream { props.load(it) }
+        def sdkDir = props.getProperty('sdk.dir')
+        if (sdkDir) {
+            candidates << sdkDir
+        }
+    }
+    candidates << "${System.getProperty('user.home')}/Android/Sdk"
+    candidates << "${System.getProperty('user.home')}/Library/Android/sdk"
+    candidates << '/usr/local/lib/android/sdk'
+    candidates << '/opt/android-sdk'
+
+    for (def candidate : candidates) {
+        def jar = new File(candidate.toString(), "platforms/android-${platformVersion}/android.jar")
+        if (jar.exists()) {
+            return jar
+        }
+    }
+    return null
+}
+
+ext.requireAndroidJar = { int platformVersion, String moduleName ->
+    def jar = resolveAndroidJar(platformVersion)
+    if (jar == null) {
+        throw new GradleException(
+                "[$moduleName] android.jar для platforms;android-${platformVersion} не найден. " +
+                "Установите пакет через sdkmanager или задайте ANDROID_HOME / local.properties:sdk.dir.")
+    }
+    return jar
+}

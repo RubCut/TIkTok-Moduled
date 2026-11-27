@@ -34,8 +34,11 @@ public final class AtomicFile {
                     parent != null ? parent : target.getFileSystem().getPath("."),
                     "." + target.getFileName() + ".", ".tmp");
             Files.write(temp, data);
-            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(temp.toFile())) {
-                fos.getFD().sync();
+            // force() без TRUNCATE_EXISTING: открытие файла на запись обычным
+            // FileOutputStream обнулило бы уже записанные данные.
+            try (java.nio.channels.FileChannel channel = java.nio.channels.FileChannel.open(
+                    temp, java.nio.file.StandardOpenOption.WRITE)) {
+                channel.force(true);
             }
             Files.move(temp, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
             temp = null;

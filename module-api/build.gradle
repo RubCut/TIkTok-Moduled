@@ -1,0 +1,26 @@
+// module-api: минимальный контракт автора модуля (ТЗ §5.1, §9).
+// Чистый Java без Android-библиотек и без MD3: android.jar подключается только
+// как compileOnly, чтобы контекст хоста был типизирован, но не утяжелял пакет.
+plugins {
+    id 'java-library'
+}
+
+apply from: rootProject.file('gradle/android-jar.gradle')
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+dependencies {
+    compileOnly files(requireAndroidJar(rootProject.ext.compileSdkVersion, 'module-api'))
+    testImplementation "junit:junit:$rootProject.ext.junitVersion"
+    // В тестах android.jar нужен в classpath, чтобы типы платформы разрешались.
+    testImplementation files(requireAndroidJar(rootProject.ext.compileSdkVersion, 'module-api'))
+}
+
+tasks.withType(Test).configureEach {
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+    }
+}
