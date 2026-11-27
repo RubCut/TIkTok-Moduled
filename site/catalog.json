@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "name": "TModules Catalog",
+  "modules": [
+    {
+      "id": "dev.moduled.sample",
+      "name": "Пример модуля",
+      "description": "Эталонный модуль-пример: логирование, снимок конфига, честная диагностика hook backend.",
+      "manifestUrl": "https://rubcut.github.io/TIkTok-Moduled/descriptors/dev.moduled.sample.json"
+    },
+    {
+      "id": "dev.moduled.region",
+      "name": "Модуль региона",
+      "description": "Комплектный модуль региона: локальная подмена региональных параметров на уровне приложения. Не меняет IP, SIM, GPS и регион аккаунта.",
+      "manifestUrl": "https://rubcut.github.io/TIkTok-Moduled/descriptors/dev.moduled.region.json"
+    },
+    {
+      "id": "dev.moduled.inapp.manager",
+      "name": "Менеджер внутри приложения",
+      "description": "Необязательный модуль: состояние модулей внутри патченного хоста через мост менеджера; read-only при недоступном мосте.",
+      "manifestUrl": "https://rubcut.github.io/TIkTok-Moduled/descriptors/dev.moduled.inapp.manager.json"
+    }
+  ]
+}

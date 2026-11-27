@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TModules — каталог модулей</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; margin: 0; background: #fffbfe; color: #1c1b1f; }
+  @media (prefers-color-scheme: dark) { body { background: #1c1b1f; color: #e6e1e5; } .card { background: #2b2930 !important; } }
+  header { padding: 24px 16px 8px; max-width: 720px; margin: 0 auto; }
+  main { max-width: 720px; margin: 0 auto; padding: 8px 16px 32px; }
+  .card { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 12px; border: 1px solid rgba(0,0,0,.08); }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .note { font-size: 13px; opacity: .8; }
+  input { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 12px; border: 1px solid rgba(0,0,0,.2); font-size: 16px; margin: 12px 0; background: transparent; color: inherit; }
+  code { font-family: monospace; font-size: 12px; opacity: .8; }
+  .warn { border-left: 4px solid #b3261e; padding-left: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>TModules — каталог модулей</h1>
+  <div class="note">Статический каталог на GitHub Pages (ТЗ §13.1). Обновление в приложении — только по явному запросу пользователя.</div>
+</header>
+<main>
+  <div class="card warn">
+    <b>Предупреждение (§14.1):</b> модули выполняются с правами процесса
+    приложения-хоста. Включайте только модули, коду которых доверяете. Каталог
+    не проверяет код модулей автоматически — модерация источника описана в
+    <code>docs/CATALOG_MODERATION.md</code>.
+  </div>
+  <input id="q" type="search" placeholder="Поиск по каталогу" aria-label="Поиск по каталогу">
+  <div id="list" class="note">Загрузка каталога…</div>
+  <div class="card note" id="meta"></div>
+</main>
+<script>
+(async function () {
+  const list = document.getElementById('list');
+  const meta = document.getElementById('meta');
+  const q = document.getElementById('q');
+  let modules = [];
+  try {
+    const response = await fetch('catalog.json', { cache: 'no-store' });
+    if (!response.ok) throw new Error('HTTP ' + response.status);
+    const catalog = await response.json();
+    if (catalog.schemaVersion !== 1) throw new Error('Неизвестная версия схемы: ' + catalog.schemaVersion);
+    modules = catalog.modules || [];
+    meta.textContent = 'Схема: ' + catalog.schemaVersion + ' · источник: ' + location.origin + '/TIkTok-Moduled/catalog.json · модулей: ' + modules.length;
+  } catch (e) {
+    list.textContent = 'Каталог недоступен: ' + e.message;
+    return;
+  }
+  function render(filter) {
+    list.innerHTML = '';
+    const lower = (filter || '').toLowerCase();
+    const shown = modules.filter(m => !lower || (m.id + ' ' + m.name + ' ' + m.description).toLowerCase().includes(lower));
+    if (!shown.length) { list.textContent = 'Ничего не найдено.'; return; }
+    for (const m of shown) {
+      const card = document.createElement('div');
+      card.className = 'card';
+      const title = document.createElement('b');
+      title.textContent = m.name;
+      const id = document.createElement('div');
+      id.innerHTML = '<code></code>';
+      id.querySelector('code').textContent = m.id;
+      const desc = document.createElement('p');
+      desc.textContent = m.description;
+      const link = document.createElement('a');
+      link.href = m.manifestUrl;
+      link.textContent = 'descriptor (JSON)';
+      card.append(title, id, desc, link);
+      list.appendChild(card);
+    }
+  }
+  q.addEventListener('input', () => render(q.value));
+  render('');
+})();
+</script>
+</body>
+</html>
