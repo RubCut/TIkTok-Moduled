@@ -242,7 +242,7 @@ public class ModuleLoaderTest {
         }
 
         @Override
-        public HostInfoProvider hostInfo() {
+        public ModuleLoader.HostInfoProvider hostInfo() {
             return () -> new RuntimeHostInfo(HOST_PACKAGE, "1.0.0", 100,
                     "demo-adapter", "1", true, new String[] {"arm64-v8a"});
         }
