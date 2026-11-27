@@ -93,8 +93,10 @@ public class RemoteDescriptorTest {
     public void rejectsBadHashesAndUnknownFields() {
         assertEquals("DESCRIPTOR_BAD_HASH",
                 parse(VALID.replace("a".repeat(64), "short")).errorCode());
+        // Неизвестное поле вставляется перед закрывающей скобой: в VALID нет
+        // поля signature, поэтому подстановка должна добавлять поле явно.
         assertEquals("DESCRIPTOR_UNKNOWN_FIELD",
-                parse(VALID.replace(",\"signature\"", ",\"signatureV99\" ,\"signature\""))
+                parse(VALID.substring(0, VALID.length() - 1) + ",\"signatureV99\":\"x\"}")
                         .errorCode());
         assertEquals("DESCRIPTOR_BAD_FINGERPRINT",
                 parse(VALID.replace("b".repeat(64), "zzz")).errorCode());
