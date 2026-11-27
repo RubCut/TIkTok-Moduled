@@ -58,6 +58,17 @@ public final class BundledModules {
      */
     public static Result<InstallOutcome> install(Context context, TModulesApplication app,
                                                  String assetName) {
+        return install(context, app, assetName, false, false);
+    }
+
+    /**
+     * @param confirmReplace пользователь подтвердил замену существующего модуля
+     *                       с тем же ID (PKG-06)
+     * @param confirmNewKey  пользователь подтвердил смену авторского ключа
+     */
+    public static Result<InstallOutcome> install(Context context, TModulesApplication app,
+                                                 String assetName, boolean confirmReplace,
+                                                 boolean confirmNewKey) {
         File bundledDir = new File(app.storageRoot(), "bundled");
         if (!bundledDir.isDirectory() && !bundledDir.mkdirs()) {
             return Result.fail("BUNDLED_NO_DIR",
@@ -78,6 +89,13 @@ public final class BundledModules {
         ModuleStore store = new ModuleStore(app.modulesRoot());
         // Замена существующего модуля с тем же ID требует отдельного
         // подтверждения в UI (PKG-06): автоматически не подтверждаем.
-        return store.install(InstallRequest.bundled(archive).build());
+        InstallRequest.Builder request = InstallRequest.bundled(archive);
+        if (confirmReplace) {
+            request.confirmReplace(true);
+        }
+        if (confirmNewKey) {
+            request.confirmNewKey(true);
+        }
+        return store.install(request.build());
     }
 }

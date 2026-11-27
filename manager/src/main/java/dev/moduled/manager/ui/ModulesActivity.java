@@ -200,17 +200,24 @@ public final class ModulesActivity extends BaseScreenActivity {
     }
 
     private void installBundled(String assetName) {
+        runBundledInstall(assetName, false, false);
+    }
+
+    private void runBundledInstall(String assetName, boolean confirmReplace, boolean confirmNewKey) {
         AppExecutors.get().background(() -> {
-            Result<InstallOutcome> result =
-                    dev.moduled.manager.BundledModules.install(this, app(), assetName);
+            Result<InstallOutcome> result = dev.moduled.manager.BundledModules.install(
+                    this, app(), assetName, confirmReplace, confirmNewKey);
             AppExecutors.get().main(() -> {
                 if (result.isOk()) {
                     Dialogs.showError(this, getString(R.string.modules_install_bundled),
                             getString(R.string.modules_new_installed_disabled));
-                } else if ("INSTALL_REQUIRES_CONFIRMATION".equals(result.errorCode())
-                        || "INSTALL_KEY_CHANGED".equals(result.errorCode())) {
-                    Dialogs.confirmReplaceModule(this, assetName, result.errorMessage(), () -> {
-                    });
+                } else if ("INSTALL_REQUIRES_CONFIRMATION".equals(result.errorCode())) {
+                    // PKG-06: повторная попытка только после явного подтверждения.
+                    Dialogs.confirmReplaceModule(this, assetName, result.errorMessage(),
+                            () -> runBundledInstall(assetName, true, confirmNewKey));
+                } else if ("INSTALL_KEY_CHANGED".equals(result.errorCode())) {
+                    Dialogs.confirmReplaceModule(this, assetName, result.errorMessage(),
+                            () -> runBundledInstall(assetName, confirmReplace, true));
                 } else {
                     Dialogs.showError(this, getString(R.string.state_error),
                             result.errorCode() + ": " + result.errorMessage());
