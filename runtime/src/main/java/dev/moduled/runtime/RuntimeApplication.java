@@ -29,7 +29,6 @@ public final class RuntimeApplication extends Application {
     /** Имя класса, вставляемое патчером в manifest. */
     public static final String CLASS_NAME = "dev.moduled.runtime.RuntimeApplication";
 
-    private static final String NATIVE_LIBRARY = "tmoduled-hook";
 
     private Object delegate;
     private volatile boolean runtimeInitialized;
@@ -148,14 +147,14 @@ public final class RuntimeApplication extends Application {
     }
 
     private HookBackend loadHookBackend() {
-        try {
-            System.loadLibrary(NATIVE_LIBRARY);
-            return new RegistryHookBackend();
-        } catch (Throwable ignored) {
-            // Native hook backend не загрузился (ABI/версия ОС): перехват
-            // недоступен, что честно отражается в диагностике (RUN-02).
-            return new UnavailableHookBackend();
-        }
+        // Native hook backend (перехват ART через libtmoduled-hook.so) в первую
+        // поставку не входит (§27, ADR-0001): имитировать его загрузку нельзя.
+        // Перехват честно сообщается как недоступный; модули видят это через
+        // hooks().isAvailable() и диагностику (RUN-02). Кооперативный
+        // RegistryHookBackend существует для JVM-тестов контракта, но в реальном
+        // хосте он ничего не перехватывает, поэтому здесь не используется.
+        return new UnavailableHookBackend(
+                "native hook backend не реализован в этой поставке (§27)");
     }
 
     private boolean isMainProcess() {
