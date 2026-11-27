@@ -1,0 +1,20 @@
+// core: независимые модели, валидация архивов, хеширование, политика сбоев.
+// Чистый Java без Android-зависимостей (ТЗ §5.1). Тестируется обычными JVM-тестами.
+plugins {
+    id 'java-library'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+}
+
+tasks.withType(Test).configureEach {
+    testLogging {
+        events 'passed', 'failed', 'skipped'
+    }
+}

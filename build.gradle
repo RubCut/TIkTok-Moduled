@@ -1,0 +1,54 @@
+// Top-level build file.
+// TikTok Moduled — фиксированная сборочная база (ТЗ §4.1):
+// Gradle 8.11.1, Android Gradle Plugin 8.6.1, Java 17, minSdk 28, compile/targetSdk 35.
+// Репозитории объявлены один раз в settings.gradle (dependencyResolutionManagement),
+// поэтому здесь нет allprojects { repositories { ... } }.
+buildscript {
+    ext.agpVersion = '8.6.1'
+    ext.compileSdkVersion = 35
+    ext.minSdkVersion = 28
+    ext.targetSdkVersion = 35
+    ext.materialVersion = '1.12.0'
+    ext.appcompatVersion = '1.7.0'
+    ext.junitVersion = '4.13.2'
+    ext.robolectricVersion = '4.13'
+
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:$agpVersion"
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}
+
+// Агрегирующие задачи CI. Они зависят только от тех подпроектов, где задача
+// реально существует, поэтому сборка остаётся зелёной на промежуточных этапах,
+// когда часть модулей ещё не создана (и не маскирует настоящие ошибки).
+['ciTest': 'test', 'ciAssembleDebug': 'assembleDebug', 'ciLint': 'lint'].each { aggregateName, realName ->
+    tasks.register(aggregateName) {
+        group = 'ci'
+        description = "Run '$realName' in every subproject that provides it."
+    }
+}
+
+gradle.projectsEvaluated {
+    subprojects.each { p ->
+        def testTask = p.tasks.findByName('test')
+        if (testTask != null) {
+            rootProject.tasks.named('ciTest').configure { it.dependsOn testTask }
+        }
+        def assembleTask = p.tasks.findByName('assembleDebug')
+        if (assembleTask != null) {
+            rootProject.tasks.named('ciAssembleDebug').configure { it.dependsOn assembleTask }
+        }
+        def lintTask = p.tasks.findByName('lint')
+        if (lintTask != null) {
+            rootProject.tasks.named('ciLint').configure { it.dependsOn lintTask }
+        }
+    }
+}

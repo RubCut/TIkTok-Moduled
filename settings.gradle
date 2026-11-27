@@ -1,0 +1,25 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "tiktok-moduled"
+include ':core'
+include ':module-api'
+include ':runtime'
+include ':standalone-ui'
+include ':patcher'
+include ':manager'
+include ':demo-host'
+include ':sample-module'
+include ':region-module'
+include ':inapp-manager'
